@@ -38,29 +38,39 @@ int main() {
     TargetSelector selector;
     Visualizer vis;
 
-    //加载模型
     detector.init(model_path, conf_thresh, nms_thresh, cv::Size(input_size, input_size));
 
-    // ===== 打开输入源 =====
     cv::VideoCapture cap;
-    if (input_path == "0" ) {
-        cap.open(0);   // 默认摄像头
+    if (input_path == "0") {
+        cap.open(0);
     } else {
         cap.open(input_path);
     }
 
-    // ===== 获取第一帧尺寸并初始化 selector =====
     cv::Mat frame;
-    cap.read(frame);
+    cap.read(frame); 
     selector.init(frame.size());
 
-    // ===== 主循环 =====
+    std::string output_path = "output_result.mp4";
+    cv::VideoWriter writer;
+    double fps = cap.get(cv::CAP_PROP_FPS);
+    if (fps <= 0) fps = 20.0;
+    int fourcc = cv::VideoWriter::fourcc('H', '2', '6', '4');
+    writer.open(output_path, fourcc, fps, frame.size(), true);
+    bool save_video = writer.isOpened();
+    if (!save_video) {
+        std::cerr << "Error: VideoWriter cannot open " << output_path
+              << ". Video will NOT be saved." << std::endl;
+    } else {
+    std::cout << "Video will be saved to: " << output_path << std::endl;
+    }
+
     int total_frames = 0;
     int detected_frames = 0;
     float total_time_ms = 0.0f;
 
     while (true) {
-        if (!cap.read(frame) || frame.empty()) break;
+        if (!cap.read(frame)) break;
         total_frames++;
 
         auto t0 = std::chrono::high_resolution_clock::now();
@@ -88,18 +98,22 @@ int main() {
         vis.drawCenters(frame, result);
         vis.drawHUD(frame, instant_fps, result.detected_count);
 
+        if (writer.isOpened()) {
+            writer.write(frame);
+        }
+
         cv::imshow("armor_detect", frame);
-        if (cv::waitKey(1) == 'q') break;   // 按 q 退出
+        if (cv::waitKey(1) == 'q') break;
     }
 
     cap.release();
+    writer.release();   
     cv::destroyAllWindows();
 
 #ifdef ENABLE_JUDGE
     judge.close();
 #endif
 
-    // ===== 统计输出 =====
     float detection_rate = (total_frames > 0) ? static_cast<float>(detected_frames) / total_frames : 0.0f;
     float avg_fps = (total_time_ms > 0) ? (1000.0f * total_frames / total_time_ms) : 0.0f;
 
@@ -113,6 +127,10 @@ int main() {
 #ifdef ENABLE_EVALUATE
     evaluator.printResult(avg_fps);
 #endif
+
+    if (writer.isOpened()) {
+        std::cout << "Output video saved as: " << output_path << std::endl;
+    }
 
     return 0;
 }

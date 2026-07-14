@@ -74,19 +74,13 @@ void ArmorDetector::postprocess(const cv::Mat& output,
     if (output.empty()) return;
 
     cv::Mat predictions;
-    if (output.dims == 3) {
-        int dim1 = output.size[1];
-        int dim2 = output.size[2];
-        predictions = cv::Mat(dim1, dim2, CV_32F,
-                              const_cast<float*>(reinterpret_cast<const float*>(output.data)));
-        if (dim1 < dim2) {
-            cv::transpose(predictions, predictions);
-        }
-    } else if (output.dims == 2) {
-        predictions = output;
-    } else {
-        std::cerr << "[Detector] Unsupported output dims: " << output.dims << std::endl;
-        return;
+
+    int dim1 = output.size[1];
+    int dim2 = output.size[2];
+    predictions = cv::Mat(dim1, dim2, CV_32F,
+                            const_cast<float*>(reinterpret_cast<const float*>(output.data)));
+    if (dim1 < dim2) {
+        cv::transpose(predictions, predictions);
     }
 
     const int num_classes = static_cast<int>(class_names_.size());
@@ -113,7 +107,7 @@ void ArmorDetector::postprocess(const cv::Mat& output,
             }
         }
 
-        float confidence = has_objectness ? row[4] * best_score : best_score;
+        float confidence = best_score;
         if (confidence < conf_threshold_) continue;
 
         float cx = row[0];

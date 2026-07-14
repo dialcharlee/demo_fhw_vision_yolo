@@ -5,7 +5,6 @@
 #include <sstream>
 
 namespace {
-// 根据类别 ID 返回颜色（6种）
 cv::Scalar colorForClass(int class_id) {
     static const cv::Scalar colors[] = {
         cv::Scalar(255, 80, 80),   // blue3
@@ -18,7 +17,6 @@ cv::Scalar colorForClass(int class_id) {
     return colors[std::abs(class_id) % 6];
 }
 
-// 将类别 ID 映射为类别名称（与训练时顺序一致）
 std::string className(int class_id) {
     static const std::string names[] = {
         "blue3", "blue1", "bluesb",
@@ -26,7 +24,7 @@ std::string className(int class_id) {
     };
     return names[std::abs(class_id) % 6];
 }
-} // namespace
+} 
 
 void Visualizer::drawDetections(cv::Mat& frame,
                                 const std::vector<ArmorObject>& detections) {
@@ -38,7 +36,6 @@ void Visualizer::drawDetections(cv::Mat& frame,
                                static_cast<int>(std::round(det.bbox.y + det.bbox.height))));
         cv::rectangle(frame, box, color, 2);
 
-        // 标签文本：类别名称 + 置信度（保留两位小数）
         std::ostringstream label;
         label << className(det.class_id) << " " 
               << std::fixed << std::setprecision(2) << det.confidence;
