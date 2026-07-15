@@ -10,8 +10,8 @@ cv::Scalar colorForClass(int class_id) {
         cv::Scalar(255, 80, 80),   // blue3
         cv::Scalar(255, 180, 60),  // blue1
         cv::Scalar(255, 80, 220),  // bluesb
-        cv::Scalar(80, 80, 255),   // red3
-        cv::Scalar(60, 180, 255),  // red1
+        cv::Scalar(80, 80, 255),   // red1
+        cv::Scalar(60, 180, 255),  // red3
         cv::Scalar(80, 220, 255)   // redsb
     };
     return colors[std::abs(class_id) % 6];
@@ -20,7 +20,7 @@ cv::Scalar colorForClass(int class_id) {
 std::string className(int class_id) {
     static const std::string names[] = {
         "blue3", "blue1", "bluesb",
-        "red3", "red1", "redsb"
+         "red1", "red3","redsb"
     };
     return names[std::abs(class_id) % 6];
 }
@@ -55,8 +55,7 @@ void Visualizer::drawCenters(cv::Mat& frame, const FrameResult& result) {
     for (int i = 0; i < result.detected_count && i < MAX_ARMOR_COUNT; ++i) {
         const cv::Point2f& p = result.centers[i];
         cv::circle(frame, p, 5, cv::Scalar(0, 255, 255), cv::FILLED);
-        cv::drawMarker(frame, p, cv::Scalar(0, 0, 255), cv::MARKER_CROSS, 18, 2);
-
+        
         std::ostringstream text;
         text << "(" << static_cast<int>(std::round(p.x)) << "," << static_cast<int>(std::round(p.y)) << ")";
         cv::putText(frame, text.str(), p + cv::Point2f(8, -8),
